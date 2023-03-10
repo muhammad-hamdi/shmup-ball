@@ -46,7 +46,11 @@ int main()
     srand(time(NULL));
     // Create Window
     Scene currentScene = Menu;
-    sf::RenderWindow window(sf::VideoMode(800, 600), "We Ballin'");
+
+    sf::ContextSettings settings;
+    settings.antialiasingLevel = 8;
+
+    sf::RenderWindow window(sf::VideoMode(800, 600), "We Ballin'", sf::Style::Default, settings);
     sf::View view(sf::Vector2f(window.getSize().x/2, window.getSize().y/2), sf::Vector2f(800, VIEW_HEIGHT));
 
     sf::Music menuMusic;
@@ -152,8 +156,6 @@ int main()
         // events
         handleEvents(window, view);
 
-        window.setView(view);
-
         //UPDATE
 
         //menu update
@@ -176,7 +178,7 @@ int main()
             if(sf::Mouse::isButtonPressed(sf::Mouse::Left) && shootTimer >= 3)
             {
                 projectilePrototype.shape.setPosition(player.getPosition());
-                sf::Vector2f dir = static_cast<sf::Vector2f>(sf::Mouse::getPosition(window)) - projectilePrototype.shape.getPosition();
+                sf::Vector2f dir = window.mapPixelToCoords(sf::Mouse::getPosition(window)) - projectilePrototype.shape.getPosition();
                 float magnitude = sqrt(dir.x*dir.x + dir.y*dir.y);
                 magnitude > 0 ? dir /= magnitude : dir;
                 projectilePrototype.dir = dir;
@@ -277,6 +279,7 @@ int main()
 
         //menu draw
         if(currentScene == Menu) {
+            window.setView(window.getDefaultView());
             window.draw(titleText);
             pressToStartText.setString("Press Space To Start");
             pressToStartText.setPosition(window.getSize().x / 2 - pressToStartText.getGlobalBounds().width/2, window.getSize().y / 2 - pressToStartText.getGlobalBounds().height/2);
@@ -287,6 +290,8 @@ int main()
 
         // gameplay draw
         if (currentScene == Gameplay) {
+            window.setView(view);
+
             window.draw(player);
 
             for(Enemy& enemy : enemies) {
@@ -297,6 +302,8 @@ int main()
                 window.draw(projectile.shape);
             }
 
+            window.setView(window.getDefaultView());
+
             window.draw(livesText);
             window.draw(scoreText);
         }
@@ -304,6 +311,8 @@ int main()
 
         //gameover draw
         if(currentScene == GameOver) {
+            window.setView(window.getDefaultView());
+            
             window.draw(gameOverText);
             finalScoreText.setString("Score: " + std::to_string(score));
             finalScoreText.setPosition(window.getSize().x / 2 - finalScoreText.getGlobalBounds().width/2, window.getSize().y / 2 - finalScoreText.getGlobalBounds().height/2);
